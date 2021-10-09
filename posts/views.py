@@ -276,6 +276,9 @@ class IssueView(PrivateAPI):
             if request.data.get('content'):
                 issue_obj.content = request.data.get('content')
 
+            if request.data.get('status'):
+                issue_obj.status = request.data.get('status')
+
             if request.data.get('title'):
                 issue_obj.title = request.data.get('title')
 
