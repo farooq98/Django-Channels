@@ -1,16 +1,9 @@
-from .models import UserModel, WorkSpaceModel, UserWorkSpaceRelationTable
-from core_files import generate_random_code,send_verification_email
+from .models import UserModel
 from core_files.authentication import PublicAPI, PrivateAPI
 from django.contrib.auth import login, logout
 from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
-from base64 import decodebytes
-import os
-
-root_path = os.getcwd()
-
-workspace_login_link = ""
 
 class CreateUser(PublicAPI):
 
@@ -54,7 +47,7 @@ class CreateUser(PublicAPI):
         )    
 
         if user:
-            user.designation = data.get("designation")
+            user.user_type = data.get("user_type")
             user.name = data.get("name")
             user.save()
 
@@ -71,36 +64,6 @@ class CreateUser(PublicAPI):
                 "created": False,
                 "message": "something went wrong"
             }, status=status.HTTP_400_BAD_REQUEST)
-
-class CreateWorkSpace(PrivateAPI):
-
-    def post(self, request):
-
-        data = request.data
-        workspace_created = WorkSpaceModel.objects.create(
-            workspace_name = data.get('workspace_name'),
-            workspace_image = data.get('workspace_image'),
-            user = request.user
-        )
-
-        if workspace_created:
-            user_workspace_relation = UserWorkSpaceRelationTable.objects.create(
-                user = request.user,
-                workspace = workspace_created,
-                type_of_user = 'admin'
-            )
-            if user_workspace_relation:
-                request.user.is_workspace_admin = True
-                request.user.save()
-
-                return Response({
-                    "status": True,
-                    "workspace_id": workspace_created.id,
-                    "workspace_name": workspace_created.workspace_name,
-                }, status = status.HTTP_201_CREATED)
-        return Response({
-            "status": False,
-        }, status = status.HTTP_400_BAD_REQUEST)       
 
 class ActivateUser(PublicAPI):
 
@@ -196,7 +159,6 @@ class LoginUser(PublicAPI):
 
     def post(self, request):
 
-        print(request.data)
         eamil = request.data.get('email')
         password = request.data.get('password')
 
@@ -215,27 +177,16 @@ class LoginUser(PublicAPI):
                     "status": True,
                     "isActive": user.is_active,
                     "name": user.name,
-                    "designation": user.designation,
+                    "user_type": user.user_type,
                     "image_url": user.image_url,
                 }
                 if user.is_active:
                     login(request, user)
+                    return Response(resp, status=status.HTTP_200_OK)
                 else:
                     user.send_email()
                     resp.update({"activation_code": user.code})
-
-                try:
-                    user_workspaces = UserWorkSpaceRelationTable.objects.filter(user=user)
-                    user_workspaces = [{
-                        "type_of_user": user_workspace.type_of_user,
-                        "workspace_name": user_workspace.workspace.workspace_name,
-                        "workspace_image": user_workspace.workspace.workspace_image,
-                        "workspace_id": user_workspace.workspace.id,
-                    } for user_workspace in user_workspaces]
-                    resp.update({"user_workspaces":user_workspaces})
-                except UserWorkSpaceRelationTable.DoesNotExist:
-                    resp.update({"user_workspaces": []})
-                return Response(resp, status=status.HTTP_200_OK)
+                    return Response(resp, status=status.HTTP_200_OK)
             else:
                 return Response({
                     "status": False,
@@ -283,72 +234,6 @@ class CheckAuth(PrivateAPI):
     def get(self, request):
 
         return Response({'status': True, 'email': request.user.username}, status=status.HTTP_200_OK)
-
-class AddMembersWorkSpace(PrivateAPI):
-
-    def post(self,request):
-
-        invited_users = []
-        password = generate_random_code(n_digits=8)
-        try:
-            data = request.data
-            try:
-                relation_obj = UserWorkSpaceRelationTable.objects.get(
-                    workspace__id=int(data.get('workspace_id')),
-                    user = request.user, 
-                    type_of_user = 'admin'
-                )
-                wpmodel = relation_obj.workspace
-            except WorkSpaceModel.DoesNotExist:
-                return Response({
-                    "status": False,
-                    "message": "workspace not found",
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-
-            created_members = []
-            
-            members_email_list = data.get('emails')
-            for email in members_email_list:
-                try:
-                    user = UserModel.objects.get(email=email)
-                except UserModel.DoesNotExist:
-                    user = UserModel.objects.create_user(email=email, password=password)
-                    created_members.append(user)
-                user.is_active = True
-                user.name = email.split("@")[0]
-                user.save()
-
-                try:
-                    UserWorkSpaceRelationTable.objects.get(user = user, workspace = wpmodel)
-                except UserWorkSpaceRelationTable.DoesNotExist:
-                    user_workspace_relation = UserWorkSpaceRelationTable.objects.create(
-                        user = user,
-                        workspace = wpmodel,
-                        type_of_user = 'normal'
-                    )
-                    workspace_login_link = f"HappySpace://activate/{email}/{password}/"
-                    if user_workspace_relation and user_workspace_relation.user in created_members:
-                        if not settings.DEBUG:
-                            send_verification_email(email, password,'user invite', workspace_login_link)
-                        else:
-                            invited_users.append({'email': email, 'password': password, 'link': workspace_login_link})
-
-            resp = {
-                "status": True,
-                "message": "success"
-            }
-
-            if settings.DEBUG:
-                resp.update({"invited_users": invited_users})
-            
-            return Response(resp, status = status.HTTP_201_CREATED)
-        
-        except Exception as e:
-            return Response({
-                "status": False,
-                "message": str(e)
-            }, status = status.HTTP_400_BAD_REQUEST)
 
 class UpdateUserDetails(PrivateAPI):
 

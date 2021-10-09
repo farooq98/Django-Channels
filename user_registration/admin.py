@@ -5,7 +5,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 from core.custom_admin import custom_admin_site
-from .models import UserModel, WorkSpaceModel, UserWorkSpaceRelationTable
+from .models import UserModel
 import re
 
 class UserCreationForm(forms.ModelForm):
@@ -91,9 +91,6 @@ class UserAdminView(admin.ModelAdmin):
     list_display = ('email', 'is_active', 'is_admin')
 
 
-# Now register the new UserAdmin...
-admin.site.register(WorkSpaceModel)
-admin.site.register(UserWorkSpaceRelationTable)
 admin.site.register(UserModel, UserAdmin)
 custom_admin_site.register(UserModel, UserAdminView)
 

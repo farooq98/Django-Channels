@@ -8,6 +8,6 @@ urlpatterns = [
     path('api/', include("posts.urls")),
     path('api/register/', include("user_registration.urls")),
     path('api/core/', include("myapp.urls")),
-    path('api/games/', include("games.urls")),
+    # path('api/games/', include("games.urls")),
     path('chat/', include('chat.urls')),
 ]

@@ -5,34 +5,13 @@ from .serializers import PostSerializer, CommentSerializer
 from rest_framework import status
 
 from .models import Post, Comment, Like
-from user_registration.models import WorkSpaceModel, UserWorkSpaceRelationTable
-
-# Create your views here.
-
-def validate_user_and_workspace(request):
-    try:
-        return UserWorkSpaceRelationTable.objects.get(
-            workspace__id = request.data.get('workspace_id'), 
-            user = request.user
-        )
-    except UserWorkSpaceRelationTable.DoesNotExist:
-        return Response({
-            "status": False,
-            "message": "Invalid workspace"
-        }, status=status.HTTP_400_BAD_REQUEST)
 
 class PostView(PrivateAPI):
 
     def put(self, request):
-        
-        workspace_obj = validate_user_and_workspace(request)
-
-        if isinstance(workspace_obj, Response):
-            return workspace_obj
 
         post = {
             'user': request.user,
-            'workspace': workspace_obj.workspace,
             'content': request.data.get('content'),
             'image_url': request.data.get('image_url'),
         }
@@ -58,16 +37,17 @@ class PostView(PrivateAPI):
             
             post_obj.save()
 
-        except WorkSpaceModel.DoesNotExist:
             return Response({
-                "status": False,
-                "message": "Invalid post"
-            }, status=status.HTTP_400_BAD_REQUEST)
+                "status": True,
+                "message": "post updated"
+            }, status=status.HTTP_200_OK)
 
-        return Response({
-            "status": True,
-            "message": "post updated"
-        }, status=status.HTTP_200_OK)
+        except Exception as e:
+                return Response({
+                "status": False,
+                "message": str(e)
+            }, status=status.HTTP_200_OK)
+
 
     def delete(self, request):
 
@@ -89,11 +69,6 @@ class PostView(PrivateAPI):
 class CommentView(PrivateAPI):
 
     def put(self, request):
-        
-        workspace_obj = validate_user_and_workspace(request)
-
-        if isinstance(workspace_obj, Response):
-            return workspace_obj
 
         try:
             post_obj = Post.objects.get(
@@ -195,11 +170,6 @@ class AllComments(PrivateListAPI):
 class LinkeView(PrivateAPI):
 
     def post(self, request):
-
-        workspace_obj = validate_user_and_workspace(request)
-
-        if isinstance(workspace_obj, Response):
-            return workspace_obj
 
         try:
             post_obj = Post.objects.get(

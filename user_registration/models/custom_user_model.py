@@ -35,8 +35,7 @@ class UserModel(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(auto_now_add=True)
     verification_code = models.CharField(max_length=6, null=True, blank=True)
     verification_code_timeout = models.DateTimeField(null=True, blank=True)
-    is_workspace_admin = models.BooleanField(default=False)
-    designation = models.CharField(max_length=50, null=True, blank=True)
+    user_type = models.CharField(max_length=50, null=True, blank=True)
     image_url = models.CharField(max_length=500,null=True,blank=True)
     #password field is already defined in AbstractBaseUser
 

@@ -86,7 +86,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'myapp',
     'posts',
-    'games',
+    # 'games',
     'user_registration',
 ]
 
