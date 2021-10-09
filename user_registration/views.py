@@ -47,6 +47,7 @@ class CreateUser(PublicAPI):
         )    
 
         if user:
+            user.image_url = data.get("image_url")
             user.user_type = data.get("user_type")
             user.name = data.get("name")
             user.save()
