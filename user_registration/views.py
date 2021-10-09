@@ -92,7 +92,7 @@ class ActivateUser(PublicAPI):
         }
 
         if success:
-            resp.update({"name": user.name, "designation": user.designation})
+            resp.update({"name": user.name, "user_type": user.user_type})
 
         return Response(resp, status=stat)
 
