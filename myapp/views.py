@@ -46,8 +46,8 @@ class SendMessagesOnEmail(APIView):
 
 class UploadImageAndGetUrl(APIView):
 
-    authentication_classes = (CsrfExemptSessionAuthentication, SessionAuthentication)
-    permission_classes = (IsAuthenticated, )
+    # authentication_classes = (CsrfExemptSessionAuthentication, SessionAuthentication)
+    # permission_classes = (IsAuthenticated, )
 
     def post(self, request):
 
@@ -59,8 +59,7 @@ class UploadImageAndGetUrl(APIView):
                 return Response({
                     "status": True,
                     "message":resp
-                }, status = status.HTTP_200_OK
-                )
+                }, status = status.HTTP_200_OK)
             return Response({
                 "status": False,
             }, status=status.HTTP_400_BAD_REQUEST)
