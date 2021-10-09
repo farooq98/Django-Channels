@@ -10,8 +10,8 @@ urlpatterns = [
     path('view/comments/', AllComments.as_view()),
     path('like/post/', LinkeView.as_view()),
 
-    path('post/', IssueView.as_view()),
-    path('get/post/', GetIssue.as_view()),
-    path('view/posts/', AllIssues.as_view()),
-    path('like/post/', ApproveIssueView.as_view()),
+    path('issue/', IssueView.as_view()),
+    path('get/issue/', GetIssue.as_view()),
+    path('view/issues/', AllIssues.as_view()),
+    path('like/issue/', ApproveIssueView.as_view()),
 ]
