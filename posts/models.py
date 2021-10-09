@@ -35,3 +35,41 @@ class Like(models.Model):
     def __str__(self):
         return self.user.username
 
+class Issue(models.Model):
+    
+    CHOICES = [
+        ('PENDING', 'PENDING'),
+        ('ACCEPTED', 'ACCEPTED'),
+        ('INVALID', 'INVALID'),
+        ('RESOLVED', 'RESOLVED')
+    ]
+
+    user = models.ForeignKey(UserModel, on_delete = models.CASCADE, related_name='issues_created')
+    assign_to = models.ForeignKey(UserModel, on_delete = models.CASCADE, related_name='issues_assigned')
+    title = models.CharField(max_length=50)
+    content = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=50, choices=CHOICES, default='PENDING')
+    landmark = models.CharField(max_length=50)
+    longitude = models.CharField(max_length=100, null=True, blank=True)
+    lattitude = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    edited_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.user.username
+
+class IssueImages(models.Model):
+    image_url = models.CharField(max_length=2000)
+    issue = models.ForeignKey(Issue, on_delete = models.CASCADE, related_name='images')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+class IssueCounter(models.Model):
+    class Meta:
+        unique_together = (('issue', 'user'),)
+    
+    issue = models.ForeignKey(Issue, on_delete = models.CASCADE, related_name="issue_counts")
+    user = models.ForeignKey(UserModel, on_delete = models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.user.username

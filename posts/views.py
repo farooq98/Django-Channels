@@ -1,10 +1,10 @@
 from rest_framework.pagination import PageNumberPagination
 from core_files.authentication import PrivateAPI, PrivateListAPI
 from rest_framework.response import Response
-from .serializers import PostSerializer, CommentSerializer
+from .serializers import PostSerializer, CommentSerializer, IssueSerializer
 from rest_framework import status
 
-from .models import Post, Comment, Like
+from .models import Post, Comment, Like, Issue, IssueImages, IssueCounter
 
 class PostView(PrivateAPI):
 
@@ -236,3 +236,160 @@ class GetPost(AllPosts):
 
         return super().get(request, *args, **kwargs)
 
+class IssueView(PrivateAPI):
+    
+    def put(self, request):
+
+        try:
+            issue = {
+                'user': request.user,
+                'content': request.data.get('content'),
+                'title': request.data.get('title'),
+                'status': request.data.get('status'),
+                'landmark': request.data.get('landmark'),
+                'longitude': request.data.get('longitude'),
+                'lattitude': request.data.get('lattitude'),
+            }
+
+            issue_obj = Issue.objects.create(**issue)
+
+            for image in request.data.get('image_url', []):
+                IssueImages.objects.create(image_url = image, issue = issue_obj)
+
+            return Response({
+                "status": True,
+                "message": "Issue created",
+                "post_id": issue_obj.id
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                "status": False,
+                "message": str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+
+        try:
+            issue_obj = Issue.objects.get(pk=request.data.get('issue_id'), user=request.user)
+
+            if request.data.get('content'):
+                issue_obj.content = request.data.get('content')
+
+            if request.data.get('title'):
+                issue_obj.title = request.data.get('title')
+
+            if request.data.get('landmark'):
+                issue_obj.landmark = request.data.get('landmark')
+
+            if request.data.get('lattitude') and request.data.get('longitude'):
+                issue_obj.lattitude = request.data.get('lattitude')
+                issue_obj.longitude = request.data.get('longitude')
+
+            if request.data.get('image_url', []):
+                for image in request.data.get('image_url'):
+                    IssueImages.objects.create(image_url = image, issue = issue_obj)
+            
+            issue_obj.save()
+
+            return Response({
+                "status": True,
+                "message": "post updated"
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+                return Response({
+                "status": False,
+                "message": str(e)
+            }, status=status.HTTP_200_OK)
+
+
+    def delete(self, request):
+
+        try:
+            issue_obj = Issue.objects.get(pk=request.data.get('issue_id'), user=request.user)
+            issue_obj.delete()
+
+        except Post.DoesNotExist:
+            return Response({
+                "status": False,
+                "message": "Invalid post"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            "status": True,
+            "message": "post deleted"
+        }, status=status.HTTP_200_OK)
+
+class AllIssues(PrivateListAPI):
+    
+    serializer_class = IssueSerializer
+    queryset = Issue.objects.all()
+    pagination_class = CustomPagination
+
+class GetIssue(AllIssues):
+    
+    pagination_class = None
+
+    def get(self, request, *args, **kwargs):
+
+        issue_id = request.GET.get('issue_id')
+        self.queryset = self.queryset.filter(pk=issue_id)
+
+        return super().get(request, *args, **kwargs)
+
+class ApproveIssueView(PrivateAPI):
+    
+    def post(self, request):
+
+        try:
+            issue_obj = Issue.objects.get(
+                pk = request.data.get('issue_id')
+            )
+        except Issue.DoesNotExist:
+            return Response({
+                "status": False,
+                "message": "post not found"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+        try:
+            approve = IssueCounter.objects.create(user=request.user, issue=issue_obj)
+        except Exception as e:
+            return Response({
+                "status": False,
+                "message": "Issue Already Liked"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            "status": True,
+            "message": "Issue Liked",
+            "liked_by": approve.user.username
+        }, status=status.HTTP_200_OK)
+
+    def delete(self, request):
+
+        try:
+            issue_obj = Issue.objects.get(
+                pk = request.data.get('issue_id')
+            )
+        except Issue.DoesNotExist:
+            return Response({
+                "status": False,
+                "message": "Issue not found"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+        try:
+            remove_approval = IssueCounter.objects.get(user=request.user, issue=issue_obj)
+            remove_approval.delete()
+        except IssueCounter.DoesNotExist:
+            return Response({
+                "status": False,
+                "message": "Like of issue Does not exist"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            "status": True,
+            "message": "Like from issue removed"
+        }, status=status.HTTP_200_OK)
