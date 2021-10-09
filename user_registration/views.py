@@ -39,14 +39,13 @@ class CreateUser(PublicAPI):
                 "created": False,
                 "message": message,
             }, status=status.HTTP_400_BAD_REQUEST)
-        
 
-        user = UserModel.objects.create_user(
-            email=data.get("email"), 
-            password=data.get("password")
-        )    
+        try:
+            user = UserModel.objects.create_user(
+                email=data.get("email"), 
+                password=data.get("password")
+            )    
 
-        if user:
             user.image_url = data.get("image_url")
             user.user_type = data.get("user_type")
             user.name = data.get("name")
@@ -60,10 +59,11 @@ class CreateUser(PublicAPI):
                 resp.update({"verification_code": user.verification_code})
 
             return Response(resp, status=status.HTTP_201_CREATED)
-        else:
+
+        except Exception as e:
             return Response({
                 "created": False,
-                "message": "something went wrong"
+                "message": str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
 
 class ActivateUser(PublicAPI):
@@ -112,8 +112,6 @@ class RequestForgetPassword(PublicAPI):
         
         except UserModel.DoesNotExist:
             success, message, stat = False, "No such user exists", status.HTTP_400_BAD_REQUEST
-
-        link = f"HappySpace://forgot/{email}/{user.verification_code}/"
         
         resp = {
             "status": success,
@@ -121,7 +119,7 @@ class RequestForgetPassword(PublicAPI):
         }
 
         if success and settings.DEBUG:
-            resp.update({"otp_code": user.verification_code, 'link': link})
+            resp.update({"otp_code": user.verification_code})
 
         return Response(resp, status=stat)
 
@@ -186,7 +184,7 @@ class LoginUser(PublicAPI):
                     return Response(resp, status=status.HTTP_200_OK)
                 else:
                     user.send_email()
-                    resp.update({"activation_code": user.code})
+                    resp.update({"activation_code": user.verification_code})
                     return Response(resp, status=status.HTTP_200_OK)
             else:
                 return Response({
@@ -241,13 +239,10 @@ class UpdateUserDetails(PrivateAPI):
     def post(self, request):
         
         name = request.data.get('name')
-        designation = request.data.get('designation')
         image_url = request.data.get('image_url')
 
         if name:
             request.user.name = name
-        if designation:
-            request.user.designation = designation
         if image_url:
             request.user.image_url = image_url
 
