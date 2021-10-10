@@ -271,18 +271,21 @@ class IssueView(PrivateAPI):
     def post(self, request):
 
         try:
-            issue_obj = Issue.objects.get(pk=request.data.get('issue_id'), user=request.user)
+            if request.user.user_type.lower() == 'admin':
+                issue_obj = Issue.objects.get(pk=request.data.get('issue_id'), user=request.user)
+            else:
+                issue_obj = Issue.objects.get(pk=request.data.get('issue_id'))
+
+                if request.data.get('assigned_to'):
+                    if request.user.user_type.lower() == 'admin':
+                        issue_obj.assign_to = request.user
+
+                if request.data.get('status'):
+                    if request.user.user_type.lower() == 'admin':
+                        issue_obj.status = request.data.get('status')
 
             if request.data.get('content'):
                 issue_obj.content = request.data.get('content')
-
-            if request.data.get('assigned_to'):
-                if request.user.user_type.lower() == 'admin':
-                    issue_obj.assign_to = request.user
-
-            if request.data.get('status'):
-                if request.user.user_type.lower() == 'admin':
-                    issue_obj.status = request.data.get('status')
 
             if request.data.get('title'):
                 issue_obj.title = request.data.get('title')
