@@ -137,9 +137,9 @@ class CommentView(PrivateAPI):
         }, status=status.HTTP_200_OK)
 
 class CustomPagination(PageNumberPagination):
-    page_size = 3
+    page_size = 10
     page_size_query_param = 'page_size'
-    max_page_size = 25
+    max_page_size = 100
         
 class AllPosts(PrivateListAPI):
     
@@ -334,7 +334,7 @@ class IssueView(PrivateAPI):
 class AllIssues(PrivateListAPI):
     
     serializer_class = IssueSerializer
-    queryset = Issue.objects.all()
+    queryset = Issue.objects.all().order_by('-id')
     pagination_class = CustomPagination
 
 class GetIssue(AllIssues):
