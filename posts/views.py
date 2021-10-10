@@ -272,30 +272,29 @@ class IssueView(PrivateAPI):
 
         try:
             if request.user.user_type.lower() == 'admin':
-                issue_obj = Issue.objects.get(pk=request.data.get('issue_id'), user=request.user)
-            else:
                 issue_obj = Issue.objects.get(pk=request.data.get('issue_id'))
 
                 if request.data.get('assigned_to'):
-                    if request.user.user_type.lower() == 'admin':
-                        issue_obj.assign_to = request.user
+                    issue_obj.assign_to = request.user
 
                 if request.data.get('status'):
-                    if request.user.user_type.lower() == 'admin':
-                        issue_obj.status = request.data.get('status')
+                    issue_obj.status = request.data.get('status')      
+            
+            else:
+                issue_obj = Issue.objects.get(pk=request.data.get('issue_id'), user=request.user)
 
-            if request.data.get('content'):
-                issue_obj.content = request.data.get('content')
+                if request.data.get('content'):
+                    issue_obj.content = request.data.get('content')
 
-            if request.data.get('title'):
-                issue_obj.title = request.data.get('title')
+                if request.data.get('title'):
+                    issue_obj.title = request.data.get('title')
 
-            if request.data.get('landmark'):
-                issue_obj.landmark = request.data.get('landmark')
+                if request.data.get('landmark'):
+                    issue_obj.landmark = request.data.get('landmark')
 
-            if request.data.get('lattitude') and request.data.get('longitude'):
-                issue_obj.lattitude = request.data.get('lattitude')
-                issue_obj.longitude = request.data.get('longitude')
+                if request.data.get('lattitude') and request.data.get('longitude'):
+                    issue_obj.lattitude = request.data.get('lattitude')
+                    issue_obj.longitude = request.data.get('longitude')
 
             if request.data.get('image_url', []):
                 for image in request.data.get('image_url'):
@@ -309,7 +308,7 @@ class IssueView(PrivateAPI):
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
-                return Response({
+            return Response({
                 "status": False,
                 "message": str(e)
             }, status=status.HTTP_200_OK)
