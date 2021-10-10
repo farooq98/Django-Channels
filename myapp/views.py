@@ -52,14 +52,25 @@ class UploadImageAndGetUrl(APIView):
     def post(self, request):
 
         data = request.data
-        if data.get("image_name"):
-            image_url = decode_write_and_upload_image(data.get('image_name'))
-            if image_url:
-                resp = {"image_url":image_url}
-                return Response({
-                    "status": True,
-                    "message":resp
-                }, status = status.HTTP_200_OK)
+        if data.get('multiple', False):
+            lst_images = []
+            for image in data.get('image_name'):
+                image_url = decode_write_and_upload_image(image)
+                if image_url:
+                    lst_images.append(image_url)
             return Response({
-                "status": False,
-            }, status=status.HTTP_400_BAD_REQUEST)
+                "status": True,
+                "message": {'image_url': lst_images}
+            }, status = status.HTTP_200_OK)
+        else:
+            if data.get("image_name"):
+                image_url = decode_write_and_upload_image(data.get('image_name'))
+                if image_url:
+                    resp = {"image_url":image_url}
+                    return Response({
+                        "status": True,
+                        "message":resp
+                    }, status = status.HTTP_200_OK)
+                return Response({
+                    "status": False,
+                }, status=status.HTTP_400_BAD_REQUEST)
