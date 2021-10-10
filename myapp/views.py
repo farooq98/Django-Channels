@@ -46,7 +46,8 @@ class SendMessagesOnEmail(APIView):
 
 class UploadImageAndGetUrl(APIView):
 
-    # authentication_classes = (CsrfExemptSessionAuthentication, SessionAuthentication)
+    authentication_classes = (CsrfExemptSessionAuthentication, )
+    #  SessionAuthentication)
     # permission_classes = (IsAuthenticated, )
 
     def post(self, request):
