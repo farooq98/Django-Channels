@@ -75,7 +75,7 @@ class IssueSerializer(serializers.ModelSerializer):
             # 'assigned_to_username',
             'landmark',
             'longitude',
-            'latitude',
+            'lattitude',
             'created_at', 
             'edited_at',
             'created_by', 
