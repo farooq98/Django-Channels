@@ -277,10 +277,12 @@ class IssueView(PrivateAPI):
                 issue_obj.content = request.data.get('content')
 
             if request.data.get('assigned_to'):
-                issue_obj.assign_to = request.user
+                if request.user.user_type.lower() == 'admin':
+                    issue_obj.assign_to = request.user
 
             if request.data.get('status'):
-                issue_obj.status = request.data.get('status')
+                if request.user.user_type.lower() == 'admin':
+                    issue_obj.status = request.data.get('status')
 
             if request.data.get('title'):
                 issue_obj.title = request.data.get('title')
