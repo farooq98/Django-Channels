@@ -49,8 +49,8 @@ class IssueConsumer(WebsocketConsumer):
 
 class ParticularIssueConsumer(WebsocketConsumer):
     def connect(self):
-        self.issue_name = self.scope['url_route']['kwargs']['issue_id']
-        self.room_group_name = 'issue_%s' % self.room_name
+        self.issue_id = self.scope['url_route']['kwargs']['issue_id']
+        self.room_group_name = 'issue_%s' % self.issue_id
 
         # Join room group
         async_to_sync(self.channel_layer.group_add)(
