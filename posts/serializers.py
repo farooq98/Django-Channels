@@ -65,7 +65,7 @@ class IssueSerializer(serializers.ModelSerializer):
     liked_by = IssueCounteerSerializer(source='issue_counts', many=True, read_only=True)
 
     class Meta:
-        model = Post
+        model = Issue
         fields = [
             'id', 
             'title',
