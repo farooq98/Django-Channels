@@ -45,7 +45,7 @@ class Issue(models.Model):
     ]
 
     user = models.ForeignKey(UserModel, on_delete = models.CASCADE, related_name='issues_created')
-    assign_to = models.ForeignKey(UserModel, on_delete = models.CASCADE, related_name='issues_assigned')
+    assign_to = models.ForeignKey(UserModel, on_delete = models.CASCADE, related_name='issues_assigned', null=True, blank=True)
     title = models.CharField(max_length=50)
     content = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=50, choices=CHOICES, default='PENDING')

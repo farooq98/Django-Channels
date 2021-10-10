@@ -259,7 +259,7 @@ class IssueView(PrivateAPI):
             return Response({
                 "status": True,
                 "message": "Issue created",
-                "post_id": issue_obj.id
+                "issue_id": issue_obj.id
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -275,6 +275,9 @@ class IssueView(PrivateAPI):
 
             if request.data.get('content'):
                 issue_obj.content = request.data.get('content')
+
+            if request.data.get('assigned_to'):
+                issue_obj.assign_to = request.user
 
             if request.data.get('status'):
                 issue_obj.status = request.data.get('status')
@@ -297,7 +300,7 @@ class IssueView(PrivateAPI):
 
             return Response({
                 "status": True,
-                "message": "post updated"
+                "message": "issue updated"
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -321,7 +324,7 @@ class IssueView(PrivateAPI):
 
         return Response({
             "status": True,
-            "message": "post deleted"
+            "message": "issue deleted"
         }, status=status.HTTP_200_OK)
 
 class AllIssues(PrivateListAPI):
@@ -352,7 +355,7 @@ class ApproveIssueView(PrivateAPI):
         except Issue.DoesNotExist:
             return Response({
                 "status": False,
-                "message": "post not found"
+                "message": "issue not found"
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
