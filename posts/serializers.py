@@ -59,8 +59,8 @@ class IssueSerializer(serializers.ModelSerializer):
     
     created_by = serializers.ReadOnlyField(source='user.name')
     email = serializers.ReadOnlyField(source='user.username')
-    # assigned_to_name = serializers.ReadOnlyField(source='assign_to.name')
-    # assigned_to_username = serializers.ReadOnlyField(source='assign_to.username')
+    assigned_to_name = serializers.ReadOnlyField(source='assign_to.name')
+    assigned_to_username = serializers.ReadOnlyField(source='assign_to.username')
     issue_images = IssueImageSerializer(source='images', many=True, read_only=True)
     liked_by = IssueCounteerSerializer(source='issue_counts', many=True, read_only=True)
 
@@ -71,8 +71,8 @@ class IssueSerializer(serializers.ModelSerializer):
             'title',
             'content',
             'status',
-            # 'assigned_to_name',
-            # 'assigned_to_username',
+            'assigned_to_name',
+            'assigned_to_username',
             'landmark',
             'longitude',
             'lattitude',
